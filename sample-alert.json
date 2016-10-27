@@ -1,0 +1,12 @@
+{
+  "version": "2",
+  "status": "firing",
+  "alerts": [
+    {
+      "labels": "cruft",
+      "annotations": "this is a test alert",
+      "startsAt": "<rfc3339>",
+      "endsAt": "<rfc3339>"
+    }
+  ]
+}
