@@ -3,10 +3,30 @@
   "status": "firing",
   "alerts": [
     {
-      "labels": "cruft",
-      "annotations": "this is a test alert",
-      "startsAt": "<rfc3339>",
-      "endsAt": "<rfc3339>"
+      "labels": {
+        "location": "dc1",
+        "service": "MySQL",
+        "instance": "mysqldb-01",
+        "severity": "critical"
+      },
+      "annotations": {
+        "description": "MySQL service is unreachable"
+      },
+      "startsAt": "2016-10-27T14:27:00Z",
+      "endsAt": "2016-10-27T14:27:00Z"
+    },
+    {
+      "labels": {
+        "location": "dc1",
+        "service": "filesystem (/var)",
+        "instance": "mysqldb-01",
+        "severity": "warning"
+      },
+      "annotations": {
+        "description": "Filesystem (/var) has reached 80%"
+      },
+      "startsAt": "2016-10-27T14:27:00Z",
+      "endsAt": "2016-10-27T14:27:00Z"
     }
   ]
 }

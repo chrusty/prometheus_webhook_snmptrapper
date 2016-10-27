@@ -1,12 +1,15 @@
 package snmptrapper
 
 import (
+	types "github.com/chrusty/prometheus_webhook_snmptrapper/types"
+
 	logrus "github.com/Sirupsen/logrus"
 	snmpgo "github.com/k-sone/snmpgo"
-	template "github.com/prometheus/alertmanager/template"
 )
 
-func sendTrap(alert template.Alert) {
+func sendTrap(alert types.Alert) {
+
+	// Prepare an SNMP handler:
 	snmp, err := snmpgo.NewSNMP(snmpgo.SNMPArguments{
 		Version:   snmpgo.V2c,
 		Address:   myConfig.SNMPTrapAddress,
@@ -16,31 +19,43 @@ func sendTrap(alert template.Alert) {
 	if err != nil {
 		log.WithFields(logrus.Fields{"error": err}).Error("Failed to create snmpgo.SNMP object")
 		return
+	} else {
+		log.WithFields(logrus.Fields{"address": myConfig.SNMPTrapAddress, "retries": myConfig.SNMPRetries, "community": myConfig.SNMPCommunity}).Debug("Created snmpgo.SNMP object")
 	}
 
-	// Build VarBind list
+	// Build VarBind list:
 	var varBinds snmpgo.VarBinds
+
+	// System Uptime (ideally this would be the age of the alert):
 	varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSysUpTime, snmpgo.NewTimeTicks(1000)))
 
-	oid, _ := snmpgo.NewOid("1.3.6.1.6.3.1.1.5.3")
-	varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSnmpTrap, oid))
+	// The "enterprise OID" for the trap (rising/firing or falling/recovery):
+	if alert.Status == "firing" {
+		varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSnmpTrap, trapOIDs.FiringTrap))
+	} else {
+		varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSnmpTrap, trapOIDs.RecoveryTrap))
+	}
 
-	oid, _ = snmpgo.NewOid("1.3.6.1.2.1.2.2.1.1.2")
-	varBinds = append(varBinds, snmpgo.NewVarBind(oid, snmpgo.NewInteger(2)))
+	// Insert the AlertManager variables:
+	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Description, snmpgo.NewOctetString([]byte(alert.Annotations["description"]))))
+	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Instance, snmpgo.NewOctetString([]byte(alert.Labels["instance"]))))
+	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Severity, snmpgo.NewOctetString([]byte(alert.Labels["severity"]))))
+	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Location, snmpgo.NewOctetString([]byte(alert.Labels["location"]))))
+	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Service, snmpgo.NewOctetString([]byte(alert.Labels["service"]))))
+	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.JobName, snmpgo.NewOctetString([]byte(alert.Labels["job"]))))
 
-	oid, _ = snmpgo.NewOid("1.3.6.1.2.1.31.1.1.1.1.2")
-	varBinds = append(varBinds, snmpgo.NewVarBind(oid, snmpgo.NewOctetString([]byte("eth0"))))
-
+	// Create an SNMP "connection":
 	if err = snmp.Open(); err != nil {
 		log.WithFields(logrus.Fields{"error": err}).Error("Failed to open SNMP connection")
 		return
 	}
 	defer snmp.Close()
 
+	// Send the trap:
 	if err = snmp.V2Trap(varBinds); err != nil {
 		log.WithFields(logrus.Fields{"error": err}).Error("Failed to send SNMP trap")
 		return
 	} else {
-		log.Info("It's a trap!")
+		log.WithFields(logrus.Fields{"status": alert.Status}).Info("It's a trap!")
 	}
 }

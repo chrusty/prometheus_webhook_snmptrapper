@@ -1,0 +1,117 @@
+PROMETHEUS-TRAPPER-MIB DEFINITIONS ::= BEGIN
+
+--
+-- Notifications for the Prometheus SNMP Trapper
+-- https://github.com/chrusty/prometheus_webhook_snmptrapper
+--
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, TimeTicks, experimental, NOTIFICATION-TYPE  FROM SNMPv2-SMI
+    SnmpAdminString                                                        FROM SNMP-FRAMEWORK-MIB
+;
+
+prometheusTrapper MODULE-IDENTITY
+    LAST-UPDATED "201610310000Z"
+    ORGANIZATION "Chrusty"
+    CONTACT-INFO "https://github.com/chrusty/prometheus_webhook_snmptrapper"
+    DESCRIPTION  "Example MIB objects for agent module example implementations"
+    REVISION     "201610310000Z"
+    DESCRIPTION  "Created MIB"
+    ::= { experimental 1977 }
+
+--
+-- Top level structure
+--
+prometheusTrapperNotifications        OBJECT IDENTIFIER ::= { prometheusTrapper 1 }
+prometheusTrapperNotificationsPrefix  OBJECT IDENTIFIER ::= { prometheusTrapperNotifications 0 }
+prometheusTrapperNotificationObjects  OBJECT IDENTIFIER ::= { prometheusTrapperNotifications 1 }
+
+--
+--  Notifications
+--
+
+prometheusTrapperNotificationInstance OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Unique identifier for the instance (hostname / instance-id / ip-address etc)."
+::= { prometheusTrapperNotificationObjects 1 }
+
+prometheusTrapperNotificationService OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "A name for the service(s) affected."
+::= { prometheusTrapperNotificationObjects 2 }
+
+prometheusTrapperNotificationLocation OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The location of the system(s) generating the notification."
+::= { prometheusTrapperNotificationObjects 3 }
+
+prometheusTrapperNotificationSeverity OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The severity of the notification."
+::= { prometheusTrapperNotificationObjects 4 }
+
+prometheusTrapperNotificationDescription OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "Description field."
+::= { prometheusTrapperNotificationObjects 5 }
+
+prometheusTrapperNotificationJob OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The name of the Prometheus JOB which scrapes this data."
+::= { prometheusTrapperNotificationObjects 6 }
+
+prometheusTrapperNotificationTimestamp OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION
+        "The time the notification-event occurred."
+::= { prometheusTrapperNotificationObjects 7 }
+
+prometheusTrapperFiringNotification NOTIFICATION-TYPE
+    OBJECTS     {
+                    prometheusTrapperNotificationInstance,
+                    prometheusTrapperNotificationService,
+                    prometheusTrapperNotificationLocation,
+                    prometheusTrapperNotificationSeverity,
+                    prometheusTrapperNotificationDescription,
+                    prometheusTrapperNotificationTimestamp
+                }
+    STATUS      current
+    DESCRIPTION
+        "A notification describing the OCCURRENCE of a Prometheus Alert event."
+::= { prometheusTrapperNotificationsPrefix 1 }
+
+prometheusTrapperRecoveryNotification NOTIFICATION-TYPE
+    OBJECTS     {
+                    prometheusTrapperNotificationInstance,
+                    prometheusTrapperNotificationService,
+                    prometheusTrapperNotificationLocation,
+                    prometheusTrapperNotificationSeverity,
+                    prometheusTrapperNotificationDescription,
+                    prometheusTrapperNotificationTimestamp
+                }
+    STATUS      current
+    DESCRIPTION
+        "A notification describing the RECOVERY of a Prometheus Alert event."
+::= { prometheusTrapperNotificationsPrefix 2 }
+
+END

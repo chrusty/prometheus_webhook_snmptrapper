@@ -5,7 +5,11 @@ import (
 )
 
 type Alert struct {
-	status    string
-	labels    string
-	timestamp uint
+	Address      string
+	Status       string
+	Annotations  map[string]string
+	Labels       map[string]string
+	StartsAt     time.Time
+	EndsAt       time.Time
+	GeneratorURL string
 }

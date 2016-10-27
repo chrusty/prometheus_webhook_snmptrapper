@@ -8,13 +8,13 @@ import (
 	"net/http"
 
 	config "github.com/chrusty/prometheus_webhook_snmptrapper/config"
+	types "github.com/chrusty/prometheus_webhook_snmptrapper/types"
 
 	logrus "github.com/Sirupsen/logrus"
-	template "github.com/prometheus/alertmanager/template"
 )
 
 var (
-	log      = logrus.WithFields(logrus.Fields{"logger": "Webhook server"})
+	log      = logrus.WithFields(logrus.Fields{"logger": "Webhook-server"})
 	myConfig config.Config
 )
 
@@ -23,7 +23,7 @@ func init() {
 	logrus.SetLevel(logrus.DebugLevel)
 }
 
-func Run(myConfigFromMain config.Config, alertsChannel chan template.Alert, waitGroup *sync.WaitGroup) {
+func Run(myConfigFromMain config.Config, alertsChannel chan types.Alert, waitGroup *sync.WaitGroup) {
 
 	log.WithFields(logrus.Fields{"address": myConfigFromMain.WebhookAddress}).Info("Starting the Webhook server")
 
