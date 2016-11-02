@@ -1,6 +1,8 @@
 package snmptrapper
 
 import (
+	"time"
+
 	types "github.com/chrusty/prometheus_webhook_snmptrapper/types"
 
 	logrus "github.com/Sirupsen/logrus"
@@ -26,14 +28,13 @@ func sendTrap(alert types.Alert) {
 	// Build VarBind list:
 	var varBinds snmpgo.VarBinds
 
-	// System Uptime (ideally this would be the age of the alert):
-	varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSysUpTime, snmpgo.NewTimeTicks(1000)))
-
 	// The "enterprise OID" for the trap (rising/firing or falling/recovery):
 	if alert.Status == "firing" {
 		varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSnmpTrap, trapOIDs.FiringTrap))
+		varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.TimeStamp, snmpgo.NewOctetString([]byte(alert.StartsAt.Format(time.RFC3339)))))
 	} else {
 		varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSnmpTrap, trapOIDs.RecoveryTrap))
+		varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.TimeStamp, snmpgo.NewOctetString([]byte(alert.EndsAt.Format(time.RFC3339)))))
 	}
 
 	// Insert the AlertManager variables:

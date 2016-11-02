@@ -6,8 +6,10 @@ PROMETHEUS-TRAPPER-MIB DEFINITIONS ::= BEGIN
 --
 
 IMPORTS
-    MODULE-IDENTITY, OBJECT-TYPE, TimeTicks, experimental, NOTIFICATION-TYPE  FROM SNMPv2-SMI
-    SnmpAdminString                                                        FROM SNMP-FRAMEWORK-MIB
+    MODULE-IDENTITY, OBJECT-TYPE, TimeTicks, experimental, NOTIFICATION-TYPE  
+        FROM SNMPv2-SMI
+    DisplayString, TimeStamp
+        FROM SNMPv2-TC
 ;
 
 prometheusTrapper MODULE-IDENTITY
@@ -31,7 +33,7 @@ prometheusTrapperNotificationObjects  OBJECT IDENTIFIER ::= { prometheusTrapperN
 --
 
 prometheusTrapperNotificationInstance OBJECT-TYPE
-    SYNTAX      SnmpAdminString
+    SYNTAX      DisplayString
     MAX-ACCESS  accessible-for-notify
     STATUS      current
     DESCRIPTION
@@ -39,7 +41,7 @@ prometheusTrapperNotificationInstance OBJECT-TYPE
 ::= { prometheusTrapperNotificationObjects 1 }
 
 prometheusTrapperNotificationService OBJECT-TYPE
-    SYNTAX      SnmpAdminString
+    SYNTAX      DisplayString
     MAX-ACCESS  accessible-for-notify
     STATUS      current
     DESCRIPTION
@@ -47,7 +49,7 @@ prometheusTrapperNotificationService OBJECT-TYPE
 ::= { prometheusTrapperNotificationObjects 2 }
 
 prometheusTrapperNotificationLocation OBJECT-TYPE
-    SYNTAX      SnmpAdminString
+    SYNTAX      DisplayString
     MAX-ACCESS  accessible-for-notify
     STATUS      current
     DESCRIPTION
@@ -55,7 +57,7 @@ prometheusTrapperNotificationLocation OBJECT-TYPE
 ::= { prometheusTrapperNotificationObjects 3 }
 
 prometheusTrapperNotificationSeverity OBJECT-TYPE
-    SYNTAX      SnmpAdminString
+    SYNTAX      DisplayString
     MAX-ACCESS  accessible-for-notify
     STATUS      current
     DESCRIPTION
@@ -63,7 +65,7 @@ prometheusTrapperNotificationSeverity OBJECT-TYPE
 ::= { prometheusTrapperNotificationObjects 4 }
 
 prometheusTrapperNotificationDescription OBJECT-TYPE
-    SYNTAX      SnmpAdminString
+    SYNTAX      DisplayString
     MAX-ACCESS  accessible-for-notify
     STATUS      current
     DESCRIPTION
@@ -71,7 +73,7 @@ prometheusTrapperNotificationDescription OBJECT-TYPE
 ::= { prometheusTrapperNotificationObjects 5 }
 
 prometheusTrapperNotificationJob OBJECT-TYPE
-    SYNTAX      SnmpAdminString
+    SYNTAX      DisplayString
     MAX-ACCESS  accessible-for-notify
     STATUS      current
     DESCRIPTION
@@ -79,7 +81,7 @@ prometheusTrapperNotificationJob OBJECT-TYPE
 ::= { prometheusTrapperNotificationObjects 6 }
 
 prometheusTrapperNotificationTimestamp OBJECT-TYPE
-    SYNTAX      TimeTicks
+    SYNTAX      DisplayString
     MAX-ACCESS  accessible-for-notify
     STATUS      current
     DESCRIPTION
