@@ -63,9 +63,10 @@ func HandleUdp(data []byte) {
 
 	// Dump the metadata:
 	logrus.WithFields(logrus.Fields{"version": trap.Version, "community": trap.Community, "enterprise_id": trap.EnterpriseId, "address": trap.Address}).Info("SNMP trap received")
+	logrus.WithFields(logrus.Fields{"general": trap.GeneralTrap, "special": trap.SpeicalTrap}).Info("SNMP trap values")
 
 	// Dump the values:
 	for trapOID, trapValue := range trap.Values {
-		logrus.WithFields(logrus.Fields{"OID": trapOID, "value": trapValue}).Info("Trap data")
+		logrus.WithFields(logrus.Fields{"OID": trapOID, "value": trapValue}).Info("Trap variable")
 	}
 }
