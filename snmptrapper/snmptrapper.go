@@ -23,15 +23,10 @@ func init() {
 	logrus.SetLevel(logrus.DebugLevel)
 
 	// Configure which OIDs to use for the SNMP Traps:
-	trapOIDs.FiringTrap, _ = snmpgo.NewOid("1.3.6.1.3.1977.1.0.1")
-	trapOIDs.RecoveryTrap, _ = snmpgo.NewOid("1.3.6.1.3.1977.1.0.2")
-	trapOIDs.Instance, _ = snmpgo.NewOid("1.3.6.1.3.1977.1.1.1")
-	trapOIDs.Service, _ = snmpgo.NewOid("1.3.6.1.3.1977.1.1.2")
-	trapOIDs.Location, _ = snmpgo.NewOid("1.3.6.1.3.1977.1.1.3")
-	trapOIDs.Severity, _ = snmpgo.NewOid("1.3.6.1.3.1977.1.1.4")
-	trapOIDs.Description, _ = snmpgo.NewOid("1.3.6.1.3.1977.1.1.5")
-	trapOIDs.JobName, _ = snmpgo.NewOid("1.3.6.1.3.1977.1.1.6")
-	trapOIDs.TimeStamp, _ = snmpgo.NewOid("1.3.6.1.3.1977.1.1.7")
+	trapOIDs.FiringTrap, _ = snmpgo.NewOid("1.3.6.1.4.1.56.12.1.7")
+	trapOIDs.Service, _ = snmpgo.NewOid("1.3.6.1.4.1.56.12.9.3.0")
+	trapOIDs.Instance, _ = snmpgo.NewOid("1.3.6.1.4.1.56.12.9.1.0")
+	trapOIDs.Description, _ = snmpgo.NewOid("1.3.6.1.4.1.56.12.9.2.0")
 }
 
 func Run(myConfigFromMain config.Config, alertsChannel chan types.Alert, waitGroup *sync.WaitGroup) {

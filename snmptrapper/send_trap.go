@@ -30,19 +30,34 @@ func sendTrap(alert types.Alert) {
 	varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSysUpTime, snmpgo.NewTimeTicks(1000)))
 
 	// The "enterprise OID" for the trap (rising/firing or falling/recovery):
-	if alert.Status == "firing" {
-		varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSnmpTrap, trapOIDs.FiringTrap))
-	} else {
-		varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSnmpTrap, trapOIDs.RecoveryTrap))
+	varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSnmpTrap, trapOIDs.FiringTrap))
+
+	// Figure out which "severity" value to send:
+	switch {
+	case alert.Status == "recovery":
+		// "Any existing alerts with a matching Node, AlertGroup, AlertKey will be cleared":
+		severity = 0
+	case alert.Labels["severity"] == "info", alert.Labels["severity"] == "warning":
+		// "The alert may provide useful information when attempting to determine the root cause of an issue":
+		severity = 2
+	case alert.Labels["severity"] == "minor":
+		// "The alert represents a low priority issue that can be resolved during normal working hours":
+		severity = 3
+	case alert.Labels["severity"] == "major":
+		// "An issue has occurred that is resilience affecting and requires immediate investigation":
+		severity = 4
+	case alert.Labels["severity"] == "critical":
+		// "An issue has occurred that is service affecting and requires immediate investigation":
+		severity = 5
+	default:
+		// "The severity of this alert is yet to be determined":
+		severity = 1
 	}
 
 	// Insert the AlertManager variables:
 	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Description, snmpgo.NewOctetString([]byte(alert.Annotations["description"]))))
-	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Instance, snmpgo.NewOctetString([]byte(alert.Labels["instance"]))))
 	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Severity, snmpgo.NewOctetString([]byte(alert.Labels["severity"]))))
-	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Location, snmpgo.NewOctetString([]byte(alert.Labels["location"]))))
 	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Service, snmpgo.NewOctetString([]byte(alert.Labels["service"]))))
-	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.JobName, snmpgo.NewOctetString([]byte(alert.Labels["job"]))))
 
 	// Create an SNMP "connection":
 	if err = snmp.Open(); err != nil {
