@@ -26,13 +26,11 @@ func sendTrap(alert types.Alert) {
 	// Build VarBind list:
 	var varBinds snmpgo.VarBinds
 
-	// System Uptime (ideally this would be the age of the alert):
-	varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSysUpTime, snmpgo.NewTimeTicks(1000)))
-
 	// The "enterprise OID" for the trap (rising/firing or falling/recovery):
 	varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSnmpTrap, trapOIDs.FiringTrap))
 
 	// Figure out which "severity" value to send:
+	var severity int
 	switch {
 	case alert.Status == "recovery":
 		// "Any existing alerts with a matching Node, AlertGroup, AlertKey will be cleared":
@@ -56,7 +54,7 @@ func sendTrap(alert types.Alert) {
 
 	// Insert the AlertManager variables:
 	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Description, snmpgo.NewOctetString([]byte(alert.Annotations["description"]))))
-	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Severity, snmpgo.NewOctetString([]byte(alert.Labels["severity"]))))
+	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Instance, snmpgo.NewOctetString([]byte(alert.Labels["instance"]))))
 	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Service, snmpgo.NewOctetString([]byte(alert.Labels["service"]))))
 
 	// Create an SNMP "connection":
@@ -71,6 +69,6 @@ func sendTrap(alert types.Alert) {
 		log.WithFields(logrus.Fields{"error": err}).Error("Failed to send SNMP trap")
 		return
 	} else {
-		log.WithFields(logrus.Fields{"status": alert.Status}).Info("It's a trap!")
+		log.WithFields(logrus.Fields{"status": alert.Status, "severity": severity}).Info("It's a trap!")
 	}
 }
