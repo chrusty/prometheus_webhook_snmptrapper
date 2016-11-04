@@ -43,7 +43,7 @@ func sendTrap(alert types.Alert) {
 	arguments["snmpCommunity"] = fmt.Sprintf("-c %v", myConfig.SNMPCommunity)
 	arguments["snmpTrapdAddress"] = myConfig.SNMPTrapAddress
 	arguments["snmpTrapdOID"] = trapOIDs.TrapOID
-	arguments["agentAddress"] = "127.0.0.1"
+	arguments["agentAddress"] = "127.0.0.1" // alert.Address
 	arguments["genericTrap"] = genericTrap
 	arguments["specificTrap"] = specificTrap
 	arguments["uptime"] = "0"
