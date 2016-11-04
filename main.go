@@ -24,6 +24,7 @@ func init() {
 	flag.StringVar(&conf.SNMPCommunity, "snmpcommunity", "public", "SNMP community string")
 	flag.UintVar(&conf.SNMPRetries, "snmpretries", 1, "Number of times to retry sending SNMP traps")
 	flag.StringVar(&conf.WebhookAddress, "webhookaddress", "0.0.0.0:9099", "Address and port to listen for webhooks on")
+	flag.StringVar(&conf.SNMPTrapBinary, "snmptrapbinary", "/usr/bin/snmptrap", "Path to the net-snmp 'snmptrap' binary")
 	flag.Parse()
 
 	// Set the log-level:

@@ -1,74 +1,92 @@
 package snmptrapper
 
 import (
+	"bytes"
+	"fmt"
+	"os/exec"
+
 	types "github.com/chrusty/prometheus_webhook_snmptrapper/types"
 
 	logrus "github.com/Sirupsen/logrus"
-	snmpgo "github.com/k-sone/snmpgo"
 )
 
 func sendTrap(alert types.Alert) {
-
-	// Prepare an SNMP handler:
-	snmp, err := snmpgo.NewSNMP(snmpgo.SNMPArguments{
-		Version:   snmpgo.V2c,
-		Address:   myConfig.SNMPTrapAddress,
-		Retries:   myConfig.SNMPRetries,
-		Community: myConfig.SNMPCommunity,
-	})
-	if err != nil {
-		log.WithFields(logrus.Fields{"error": err}).Error("Failed to create snmpgo.SNMP object")
-		return
-	} else {
-		log.WithFields(logrus.Fields{"address": myConfig.SNMPTrapAddress, "retries": myConfig.SNMPRetries, "community": myConfig.SNMPCommunity}).Debug("Created snmpgo.SNMP object")
-	}
-
-	// Build VarBind list:
-	var varBinds snmpgo.VarBinds
-
-	// The "enterprise OID" for the trap (rising/firing or falling/recovery):
-	varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSnmpTrap, trapOIDs.FiringTrap))
+	var genericTrap string = "6"
+	var specificTrap string = "1"
 
 	// Figure out which "severity" value to send:
-	var severity int
 	switch {
 	case alert.Status == "recovery":
 		// "Any existing alerts with a matching Node, AlertGroup, AlertKey will be cleared":
-		severity = 0
+		specificTrap = "0"
 	case alert.Labels["severity"] == "info", alert.Labels["severity"] == "warning":
 		// "The alert may provide useful information when attempting to determine the root cause of an issue":
-		severity = 2
+		specificTrap = "2"
 	case alert.Labels["severity"] == "minor":
-		// "The alert represents a low priority issue that can be resolved during normal working hours":
-		severity = 3
+		// "specificTrapThe alert represents a low priority issue that can be resolved during normal working hours":
+		specificTrap = "3"
 	case alert.Labels["severity"] == "major":
 		// "An issue has occurred that is resilience affecting and requires immediate investigation":
-		severity = 4
+		specificTrap = "4"
 	case alert.Labels["severity"] == "critical":
 		// "An issue has occurred that is service affecting and requires immediate investigation":
-		severity = 5
+		specificTrap = "5"
 	default:
 		// "The severity of this alert is yet to be determined":
-		severity = 1
+		specificTrap = "1"
 	}
 
-	// Insert the AlertManager variables:
-	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Description, snmpgo.NewOctetString([]byte(alert.Annotations["description"]))))
-	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Instance, snmpgo.NewOctetString([]byte(alert.Labels["instance"]))))
-	varBinds = append(varBinds, snmpgo.NewVarBind(trapOIDs.Service, snmpgo.NewOctetString([]byte(alert.Labels["service"]))))
+	// Prepare to send the TRAP using Net-SNMP's "snmptrap" command (because I can't find a library capable of sending V1 traps in GoLang):
+	var stdout, stderr bytes.Buffer
+	var arguments = make(map[string]string)
+	arguments["snmpTrapVersion"] = "-v1"
+	arguments["snmpCommunity"] = fmt.Sprintf("-c %v", myConfig.SNMPCommunity)
+	arguments["snmpTrapdAddress"] = myConfig.SNMPTrapAddress
+	arguments["snmpTrapdOID"] = trapOIDs.TrapOID
+	arguments["agentAddress"] = "127.0.0.1"
+	arguments["genericTrap"] = genericTrap
+	arguments["specificTrap"] = specificTrap
+	arguments["uptime"] = "0"
+	arguments["oidComponent"] = trapOIDs.Component
+	arguments["oidComponentType"] = "s"
+	arguments["oidComponentValue"] = fmt.Sprintf("'%v'", alert.Labels["instance"])
+	arguments["oidMessage"] = trapOIDs.Message
+	arguments["oidMessageType"] = "s"
+	arguments["oidMessageValue"] = fmt.Sprintf("'%v'", alert.Annotations["description"])
+	arguments["oidSubComponent"] = trapOIDs.SubComponent
+	arguments["oidSubComponentType"] = "s"
+	arguments["oidSubComponentValue"] = fmt.Sprintf("'%v'", alert.Labels["service"])
 
-	// Create an SNMP "connection":
-	if err = snmp.Open(); err != nil {
-		log.WithFields(logrus.Fields{"error": err}).Error("Failed to open SNMP connection")
-		return
-	}
-	defer snmp.Close()
+	// Trap command:
+	netSNMPTrapCommand := exec.Command(
+		myConfig.SNMPTrapBinary,
+		arguments["snmpTrapVersion"],
+		arguments["snmpCommunity"],
+		arguments["snmpTrapdAddress"],
+		arguments["snmpTrapdOID"],
+		arguments["agentAddress"],
+		arguments["genericTrap"],
+		arguments["specificTrap"],
+		arguments["uptime"],
+		arguments["oidComponent"],
+		arguments["oidComponentType"],
+		arguments["oidComponentValue"],
+		arguments["oidMessage"],
+		arguments["oidMessageType"],
+		arguments["oidMessageValue"],
+		arguments["oidSubComponent"],
+		arguments["oidSubComponentType"],
+		arguments["oidSubComponentValue"],
+	)
+	netSNMPTrapCommand.Stdout = &stdout
+	netSNMPTrapCommand.Stderr = &stderr
 
 	// Send the trap:
-	if err = snmp.V2Trap(varBinds); err != nil {
-		log.WithFields(logrus.Fields{"error": err}).Error("Failed to send SNMP trap")
+	err := netSNMPTrapCommand.Run()
+	if err != nil {
+		log.WithFields(logrus.Fields{"error": err, "stdout": stdout.String(), "stderr": stderr.String(), "command": netSNMPTrapCommand.Path, "args": netSNMPTrapCommand.Args}).Error("Failed to send SNMP trap")
 		return
 	} else {
-		log.WithFields(logrus.Fields{"status": alert.Status, "severity": severity}).Info("It's a trap!")
+		log.WithFields(logrus.Fields{"status": alert.Status, "specific_trap": specificTrap, "generic_trap": genericTrap, "severity": alert.Labels["severity"]}).Info("It's a trap!")
 	}
 }
