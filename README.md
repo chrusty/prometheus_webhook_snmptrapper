@@ -45,5 +45,5 @@ Command-line flags
 ------------------
 - **-snmpcommunity**: The SNMP community string (_default_ = `public`)
 - **-snmpretries**: The number of times to retry sending traps (_default_ = `1`)
-- **-snmptrapaddress**: The address to send traps to (_default_ = `127.0.0.1:162`)
+- **-snmptrapaddress**: The address to send traps to (_default_ = `127.0.0.1:162`)IP address to send traps to in the form w.x.y.x:port. Default is UDP. For TCP traps, use the form tcp:w.x.y.x:port. Valid types are udp,udp4,udp6,tcp,tcp4,tcp6
 - **-webhookaddress**: The address to listen for incoming webhooks on (_default_ = `0.0.0.0:9099`)

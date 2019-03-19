@@ -12,12 +12,24 @@ import (
 func sendTrap(alert types.Alert) {
 
 	// Prepare an SNMP handler:
+
+	var network = "udp"
+	var trapaddress = myConfig.SNMPTrapAddress
+	if strings.Count(trapaddress, ":") > 1 {
+	  var sl1 []string = strings.SplitAfterN(trapaddress, ":", 2)
+	  network = strings.TrimSuffix(strings.ToLower(sl1[0]), ":")
+	  trapaddress = sl1[1]
+	}
+
 	snmp, err := snmpgo.NewSNMP(snmpgo.SNMPArguments{
+
 		Version:   snmpgo.V2c,
-		Address:   myConfig.SNMPTrapAddress,
+		Address:   trapaddress,
+		Network:   network,
 		Retries:   myConfig.SNMPRetries,
 		Community: myConfig.SNMPCommunity,
 	})
+
 	if err != nil {
 		log.WithFields(logrus.Fields{"error": err}).Error("Failed to create snmpgo.SNMP object")
 		return
