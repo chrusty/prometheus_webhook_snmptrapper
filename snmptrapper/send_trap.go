@@ -28,6 +28,10 @@ func sendTrap(alert types.Alert) {
 	// Build VarBind list:
 	var varBinds snmpgo.VarBinds
 
+	// Insert SysUpTime
+	secs := uint32(time.Now().Unix())
+	varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSysUpTime, snmpgo.NewTimeTicks(secs)))
+
 	// The "enterprise OID" for the trap (rising/firing or falling/recovery):
 	if alert.Status == "firing" {
 		varBinds = append(varBinds, snmpgo.NewVarBind(snmpgo.OidSnmpTrap, trapOIDs.FiringTrap))
