@@ -5,7 +5,7 @@ import (
 
 	types "github.com/chrusty/prometheus_webhook_snmptrapper/types"
 
-	logrus "github.com/Sirupsen/logrus"
+	logrus "github.com/sirupsen/logrus"
 	snmpgo "github.com/k-sone/snmpgo"
 )
 
