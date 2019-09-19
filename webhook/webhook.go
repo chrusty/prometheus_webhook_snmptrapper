@@ -10,7 +10,7 @@ import (
 	config "github.com/chrusty/prometheus_webhook_snmptrapper/config"
 	types "github.com/chrusty/prometheus_webhook_snmptrapper/types"
 
-	logrus "github.com/Sirupsen/logrus"
+	logrus "github.com/sirupsen/logrus"
 )
 
 var (
