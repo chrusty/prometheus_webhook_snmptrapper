@@ -14,7 +14,7 @@ Integration with Prometheus
 SNMP integration
 ----------------
 The provided MIB (`PROMETHEUS-TRAPPER-MIB.txt`) defines two notifications:
-- ***prometheusTrapperFiringNotification***: Notification for an alert that has occured
+- ***prometheusTrapperFiringNotification***: Notification for an alert that has occurred
 - ***prometheusTrapperRecoveryNotification***: Notification for an alert that has recovered
 
 The MIB can be loaded into whatever SNMP Trap-server you're using. See [Dockerfile](trapdebug/net-snmp/Dockerfile) for a working demo using net-snmp on Alpine Linux.
